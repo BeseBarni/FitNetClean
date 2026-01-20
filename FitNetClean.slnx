@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="FitNetClean.Application/FitNetClean.Application.csproj" />
+  <Project Path="FitNetClean.Domain/FitNetClean.Domain.csproj" />
+  <Project Path="FitNetClean.Infrastructure/FitNetClean.Infrastructure.csproj" />
+  <Project Path="FitNetClean.SourceGenerators/FitNetClean.SourceGenerators.csproj" Id="5a32e7a1-5f0b-46f4-8e14-c3e4672209e7" />
+  <Project Path="FitNetClean.WebAPI/FitNetClean.WebAPI.csproj" />
+</Solution>

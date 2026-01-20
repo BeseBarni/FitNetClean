@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FitNetClean.Domain\FitNetClean.Domain.csproj" />
+    <ProjectReference Include="..\FitNetClean.Infrastructure\FitNetClean.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\Interfaces\" />
+    <Folder Include="Common\Behaviours\" />
+    <Folder Include="Common\Mappings\" />
+  </ItemGroup>
+
+</Project>
