@@ -1,0 +1,60 @@
+version: '3.8'
+
+networks:
+  dev:
+    driver: bridge
+
+services:
+  fitnet-db:
+    image: postgres:16-alpine
+    container_name: fitnet_db
+    environment:
+      POSTGRES_USER: fitnet
+      POSTGRES_PASSWORD: fitnet
+      POSTGRES_DB: FitNet
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - fitnet_data:/var/lib/postgresql/data
+    networks:
+      - dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitnet -d FitNet"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  fitnet-api:
+    image: fitnet-api
+    build:
+      context: .
+      dockerfile: FitNetClean.WebAPI/Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+    depends_on:
+      fitnet-db:
+        condition: service_healthy
+    container_name: fitnet-api
+    ports:
+      - "5000:8080"
+      - "5001:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Database__ConnectionString=Host=fitnet-db;Port=5432;Database=FitNet;Username=fitnet;Password=fitnet;Include Error Detail=true
+      - APPLY_MIGRATIONS=true
+    networks:
+      - dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  fitnet_data:
+    driver: local

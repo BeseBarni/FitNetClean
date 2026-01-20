@@ -13,6 +13,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["FitNetClean.WebAPI/FitNetClean.WebAPI.csproj", "FitNetClean.WebAPI/"]
+COPY ["FitNetClean.Application/FitNetClean.Application.csproj", "FitNetClean.Application/"]
+COPY ["FitNetClean.Domain/FitNetClean.Domain.csproj", "FitNetClean.Domain/"]
+COPY ["FitNetClean.Infrastructure/FitNetClean.Infrastructure.csproj", "FitNetClean.Infrastructure/"]
 RUN dotnet restore "./FitNetClean.WebAPI/FitNetClean.WebAPI.csproj"
 COPY . .
 WORKDIR "/src/FitNetClean.WebAPI"
