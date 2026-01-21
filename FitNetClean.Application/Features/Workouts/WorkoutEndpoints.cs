@@ -1,5 +1,7 @@
 using FastEndpoints;
+using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
+using FitNetClean.Application.Extensions;
 using FitNetClean.Application.Features.Shared.Endpoints;
 using FitNetClean.Application.Features.Workouts.Commands;
 using FitNetClean.Application.Features.Workouts.Queries;
@@ -25,30 +27,39 @@ public class GetWorkoutByIdEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/workouts/{id}");
-        AllowAnonymous();
+
     }
 }
 
-public class GetWorkoutDetailEndpoint(IMediator mediator) : Endpoint<IdRequest, WorkoutDetailDto?>
+public class GetWorkoutDetailEndpoint(IMediator mediator) : Endpoint<IdRequest, ApiResponse<WorkoutDetailDto?>>
 {
     public override void Configure()
     {
         Get("/workouts/{id}/details");
-        AllowAnonymous();
+
     }
 
     public override async Task HandleAsync(IdRequest req, CancellationToken ct)
     {
         var query = new GetWorkoutDetailQuery(req.Id);
         var result = await mediator.Send(query, ct);
+        var requestId = GetRequestId();
 
         if (result == null)
         {
+            Response = ApiResponse<WorkoutDetailDto?>.NotFound(requestId);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<WorkoutDetailDto?>.Success(result, requestId);
+    }
+
+    private Guid GetRequestId()
+    {
+        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
+            ? guid
+            : Guid.Empty;
     }
 }
 
@@ -65,7 +76,7 @@ public class CreateWorkoutEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Post("/workouts");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.ProgramWriterOrAdmin);
     }
 }
 
@@ -82,7 +93,7 @@ public class UpdateWorkoutEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Put("/workouts/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.ProgramWriterOrAdmin);
     }
 }
 
@@ -92,7 +103,7 @@ public class DeleteWorkoutEndpoint(IMediator mediator)
     public override void Configure()
     {
         Delete("/workouts/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -102,12 +113,12 @@ public record AddWorkoutGroupRequest
 }
 
 public class AddWorkoutGroupToWorkoutEndpoint(IMediator mediator) 
-    : Endpoint<AddWorkoutGroupRequest, bool>
+    : Endpoint<AddWorkoutGroupRequest, ApiResponse<bool>>
 {
     public override void Configure()
     {
         Post("/workouts/{id}/workout-groups");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 
     public override async Task HandleAsync(AddWorkoutGroupRequest req, CancellationToken ct)
@@ -115,13 +126,115 @@ public class AddWorkoutGroupToWorkoutEndpoint(IMediator mediator)
         var workoutId = Route<long>("id");
         var command = new AddWorkoutGroupToWorkoutCommand(workoutId, req.WorkoutGroupId);
         var result = await mediator.Send(command, ct);
+        var requestId = HttpContext.GetRequestId();
 
         if (!result)
         {
+            Response = ApiResponse<bool>.NotFound(requestId, false);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<bool>.Success(result, requestId);
     }
 }
+
+public record FavoriteWorkoutRequest
+{
+    public long UserId { get; init; }
+}
+
+public class AddWorkoutToFavoritesEndpoint(IMediator mediator) 
+    : Endpoint<FavoriteWorkoutRequest, ApiResponse<bool>>
+{
+    public override void Configure()
+    {
+        Post("/workouts/{id}/favorites");
+
+    }
+
+    public override async Task HandleAsync(FavoriteWorkoutRequest req, CancellationToken ct)
+    {
+        var workoutId = Route<long>("id");
+        var command = new AddWorkoutToFavoritesCommand(req.UserId, workoutId);
+        var result = await mediator.Send(command, ct);
+        var requestId = GetRequestId();
+
+        if (!result)
+        {
+            Response = ApiResponse<bool>.NotFound(requestId, false);
+            HttpContext.Response.StatusCode = 404;
+            return;
+        }
+
+        Response = ApiResponse<bool>.Success(result, requestId);
+    }
+
+    private Guid GetRequestId()
+    {
+        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
+            ? guid
+            : Guid.Empty;
+    }
+}
+
+public class RemoveWorkoutFromFavoritesEndpoint(IMediator mediator) 
+    : Endpoint<FavoriteWorkoutRequest, ApiResponse<bool>>
+{
+    public override void Configure()
+    {
+        Delete("/workouts/{id}/favorites");
+
+    }
+
+    public override async Task HandleAsync(FavoriteWorkoutRequest req, CancellationToken ct)
+    {
+        var workoutId = Route<long>("id");
+        var command = new RemoveWorkoutFromFavoritesCommand(req.UserId, workoutId);
+        var result = await mediator.Send(command, ct);
+        var requestId = GetRequestId();
+
+        if (!result)
+        {
+            Response = ApiResponse<bool>.NotFound(requestId, false);
+            HttpContext.Response.StatusCode = 404;
+            return;
+        }
+
+        Response = ApiResponse<bool>.Success(result, requestId);
+    }
+
+    private Guid GetRequestId()
+    {
+        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
+            ? guid
+            : Guid.Empty;
+    }
+}
+
+public class GetUserFavoriteWorkoutsEndpoint(IMediator mediator) 
+    : Endpoint<IdRequest, ApiResponse<List<WorkoutDto>>>
+{
+    public override void Configure()
+    {
+        Get("/users/{id}/favorite-workouts");
+
+    }
+
+    public override async Task HandleAsync(IdRequest req, CancellationToken ct)
+    {
+        var query = new GetUserFavoriteWorkoutsQuery(req.Id);
+        var result = await mediator.Send(query, ct);
+        var requestId = GetRequestId();
+
+        Response = ApiResponse<List<WorkoutDto>>.Success(result, requestId);
+    }
+
+    private Guid GetRequestId()
+    {
+        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
+            ? guid
+            : Guid.Empty;
+    }
+}
+

@@ -1,5 +1,7 @@
+using FitNetClean.Domain.Entities;
 using FitNetClean.Infrastructure.Extensions;
 using FitNetClean.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
 
 namespace FitNetClean.WebAPI.Extensions;
 
@@ -27,8 +29,13 @@ public static class AppExtensions
         using var scope = app.Services.CreateScope();
 
         var context = scope.ServiceProvider.GetRequiredService<FitNetContext>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<long>>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
+        await DatabaseSeeder.SeedRolesAsync(roleManager);
+        await DatabaseSeeder.SeedDefaultAdminAsync(userManager, roleManager, logger);
         await DatabaseSeeder.SeedBasicEntitiesAsync(context);
-
     }
 }
+

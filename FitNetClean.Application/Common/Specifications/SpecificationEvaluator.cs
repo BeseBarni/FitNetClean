@@ -62,13 +62,11 @@ public static class SpecificationEvaluator
             query = query.Skip(specification.Skip).Take(specification.Take);
         }
 
-        // Apply projection if selector is defined
         if (specification.Selector != null)
         {
             return query.Select(specification.Selector);
         }
 
-        // If no selector, cast to TResult (assumes T is TResult or compatible)
         return query.Cast<TResult>();
     }
 }

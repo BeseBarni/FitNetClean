@@ -1,6 +1,8 @@
 using AutoMapper;
 using FastEndpoints;
+using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
+using FitNetClean.Application.Extensions;
 using FitNetClean.Application.Features.Exercises.Commands;
 using FitNetClean.Application.Features.Exercises.Queries;
 using FitNetClean.Application.Features.Shared.Endpoints;
@@ -16,7 +18,7 @@ public class GetExercisesEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/exercises");
-        AllowAnonymous();
+
     }
 }
 
@@ -26,11 +28,11 @@ public class GetExerciseByIdEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/exercises/{id}");
-        AllowAnonymous();
+
     }
 }
 
-public class GetExerciseWorkoutProgramsEndpoint(IMediator mediator) : Endpoint<IdRequest, ExerciseWorkoutProgramsDto?>
+public class GetExerciseWorkoutProgramsEndpoint(IMediator mediator) : Endpoint<IdRequest, ApiResponse<ExerciseWorkoutProgramsDto?>>
 {
     public override void Configure()
     {
@@ -42,14 +44,16 @@ public class GetExerciseWorkoutProgramsEndpoint(IMediator mediator) : Endpoint<I
     {
         var query = new GetExerciseWorkoutProgramsQuery(req.Id);
         var result = await mediator.Send(query, ct);
+        var requestId = HttpContext.GetRequestId();
 
         if (result == null)
         {
+            Response = ApiResponse<ExerciseWorkoutProgramsDto?>.NotFound(requestId);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<ExerciseWorkoutProgramsDto?>.Success(result, requestId);
     }
 }
 
@@ -66,7 +70,7 @@ public class CreateExerciseEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Post("/exercises");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -83,7 +87,7 @@ public class UpdateExerciseEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Put("/exercises/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -93,7 +97,7 @@ public class DeleteExerciseEndpoint(IMediator mediator)
     public override void Configure()
     {
         Delete("/exercises/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -103,12 +107,12 @@ public record AddContraIndicationRequest
 }
 
 public class AddContraIndicationToExerciseEndpoint(IMediator mediator) 
-    : Endpoint<AddContraIndicationRequest, bool>
+    : Endpoint<AddContraIndicationRequest, ApiResponse<bool>>
 {
     public override void Configure()
     {
         Post("/exercises/{id}/contraindications");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 
     public override async Task HandleAsync(AddContraIndicationRequest req, CancellationToken ct)
@@ -116,24 +120,26 @@ public class AddContraIndicationToExerciseEndpoint(IMediator mediator)
         var exerciseId = Route<long>("id");
         var command = new AddContraIndicationToExerciseCommand(exerciseId, req.ContraIndicationId);
         var result = await mediator.Send(command, ct);
+        var requestId = HttpContext.GetRequestId();
 
         if (!result)
         {
+            Response = ApiResponse<bool>.NotFound(requestId, false);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<bool>.Success(result, requestId);
     }
 }
 
 public class RemoveContraIndicationFromExerciseEndpoint(IMediator mediator) 
-    : EndpointWithoutRequest<bool>
+    : EndpointWithoutRequest<ApiResponse<bool>>
 {
     public override void Configure()
     {
         Delete("/exercises/{id}/contraindications/{contraIndicationId}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -142,13 +148,16 @@ public class RemoveContraIndicationFromExerciseEndpoint(IMediator mediator)
         var contraIndicationId = Route<long>("contraIndicationId");
         var command = new RemoveContraIndicationFromExerciseCommand(exerciseId, contraIndicationId);
         var result = await mediator.Send(command, ct);
+        var requestId = HttpContext.GetRequestId();
 
         if (!result)
         {
+            Response = ApiResponse<bool>.NotFound(requestId, false);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<bool>.Success(result, requestId);
     }
 }
+

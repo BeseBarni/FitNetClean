@@ -7,5 +7,6 @@ public record WorkoutDto(
     string? Description,
     int WarmupDurationMinutes,
     int MainWorkoutDurationMinutes,
-    int TotalDurationMinutes
+    int TotalDurationMinutes,
+    bool ContainsAvoidedContraIndications = false
 );

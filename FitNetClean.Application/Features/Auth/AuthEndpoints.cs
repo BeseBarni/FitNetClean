@@ -1,11 +1,13 @@
 using FastEndpoints;
+using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
+using FitNetClean.Application.Extensions;
 using FitNetClean.Application.Features.Auth.Commands;
 using MediatR;
 
 namespace FitNetClean.Application.Features.Auth;
 
-public class RegisterEndpoint : Endpoint<RegisterRequest, AuthResponse>
+public class RegisterEndpoint : Endpoint<RegisterRequest, ApiResponse<AuthResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -23,14 +25,15 @@ public class RegisterEndpoint : Endpoint<RegisterRequest, AuthResponse>
     public override async Task HandleAsync(RegisterRequest req, CancellationToken ct)
     {
         var command = new RegisterCommand(req);
-        var response = await _mediator.Send(command, ct);
+        var authResponse = await _mediator.Send(command, ct);
+        var requestId = HttpContext.GetRequestId();
 
+        Response = ApiResponse<AuthResponse>.Success(authResponse, requestId, 201);
         HttpContext.Response.StatusCode = 201;
-        Response = response;
     }
 }
 
-public class LoginEndpoint : Endpoint<LoginRequest, AuthResponse>
+public class LoginEndpoint : Endpoint<LoginRequest, ApiResponse<AuthResponse>>
 {
     private readonly IMediator _mediator;
 
@@ -48,13 +51,14 @@ public class LoginEndpoint : Endpoint<LoginRequest, AuthResponse>
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
         var command = new LoginCommand(req);
-        var response = await _mediator.Send(command, ct);
+        var authResponse = await _mediator.Send(command, ct);
+        var requestId = HttpContext.GetRequestId();
 
-        Response = response;
+        Response = ApiResponse<AuthResponse>.Success(authResponse, requestId);
     }
 }
 
-public class LogoutEndpoint : EndpointWithoutRequest
+public class LogoutEndpoint : EndpointWithoutRequest<ApiResponse<bool>>
 {
     public override void Configure()
     {
@@ -64,10 +68,10 @@ public class LogoutEndpoint : EndpointWithoutRequest
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        // For JWT, logout is handled client-side by removing the token
-        // Server-side logout would require token blacklisting (not implemented here)
+        var requestId = HttpContext.GetRequestId();
         
-        HttpContext.Response.StatusCode = 204; // No Content
+        Response = ApiResponse<bool>.Success(true, requestId, 204);
+        HttpContext.Response.StatusCode = 204;
         await Task.CompletedTask;
     }
 }

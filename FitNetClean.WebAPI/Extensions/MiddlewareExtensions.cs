@@ -9,4 +9,9 @@ public static class MiddlewareExtensions
     {
         return app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
     }
+
+    public static IApplicationBuilder UseAuthorizedRequestLogging(this IApplicationBuilder app)
+    {
+        return app.UseMiddleware<AuthorizedRequestLoggingMiddleware>();
+    }
 }

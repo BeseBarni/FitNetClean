@@ -26,13 +26,15 @@ public class FitNetContext : IdentityDbContext<ApplicationUser, IdentityRole<lon
     public DbSet<Measurement> Measurement { get; set; }
     public DbSet<Workout> Workout { get; set; }
     public DbSet<WorkoutGroup> WorkoutGroup { get; set; }
+    public DbSet<FavoriteWorkout> FavoriteWorkout { get; set; }
+    public DbSet<UserAvoidedContraIndication> UserAvoidedContraIndication { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
+        
         ApplyGlobalFilters(modelBuilder);
     }
 

@@ -1,4 +1,4 @@
-﻿using FitNetClean.Domain.Common;
+using FitNetClean.Domain.Common;
 using System.ComponentModel.DataAnnotations;
 
 namespace FitNetClean.Domain.Entities;
@@ -16,5 +16,7 @@ public class WorkoutGroup : IDeletable
     [Required]
     [MaxLength(100)]
     public string Title { get; set; } = null!;
+    
+    [Required]
     public bool IsDeleted { get; set; } = false;
 }

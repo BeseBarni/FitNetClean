@@ -27,11 +27,12 @@ public class ExerciseWorkoutProgramsSpecification : BaseSpecification<Exercise, 
                     e.Workout.TotalDurationMinutes,
                     e.Workout.IsDeleted,
                     e.Workout.ExerciseList
-                        .SelectMany(ex => ex.ContraIndicationList)
+                        .Where(ex => !ex.IsDeleted) // ✅ Filter deleted exercises
+                        .SelectMany(ex => ex.ContraIndicationList.Where(ci => !ci.IsDeleted)) // ✅ Filter deleted CI
                         .Union(
                             e.Workout.ExerciseList
-                                .Where(ex => ex.Equipment != null)
-                                .SelectMany(ex => ex.Equipment!.ContraIndicationList)
+                                .Where(ex => !ex.IsDeleted && ex.Equipment != null && !ex.Equipment.IsDeleted) // ✅ Filter deleted
+                                .SelectMany(ex => ex.Equipment!.ContraIndicationList.Where(ci => !ci.IsDeleted)) // ✅ Filter deleted CI
                         )
                         .Distinct()
                         .OrderBy(ci => ci.Name)

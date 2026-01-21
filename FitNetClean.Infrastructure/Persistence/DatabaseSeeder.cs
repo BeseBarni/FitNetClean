@@ -1,11 +1,78 @@
+using FitNetClean.Domain.Constants;
 using FitNetClean.Domain.Entities;
 using FitNetClean.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FitNetClean.Infrastructure.Persistence;
 
 public static class DatabaseSeeder
 {
+    public static async Task SeedRolesAsync(RoleManager<IdentityRole<long>> roleManager)
+    {
+        string[] roleNames = { Roles.Admin, Roles.ProgramWriter, Roles.ProgramReader };
+
+        foreach (var roleName in roleNames)
+        {
+            var roleExist = await roleManager.RoleExistsAsync(roleName);
+            if (!roleExist)
+            {
+                await roleManager.CreateAsync(new IdentityRole<long>(roleName));
+            }
+        }
+    }
+
+    public static async Task SeedDefaultAdminAsync(
+        UserManager<ApplicationUser> userManager, 
+        RoleManager<IdentityRole<long>> roleManager,
+        ILogger? logger = null)
+    {
+        // Ellenőrizzük, hogy létezik-e Admin szerepkörű felhasználó
+        var adminRole = await roleManager.FindByNameAsync(Roles.Admin);
+        if (adminRole == null)
+        {
+            logger?.LogWarning("Admin role does not exist. Skipping default admin creation.");
+            return;
+        }
+
+        var usersInAdminRole = await userManager.GetUsersInRoleAsync(Roles.Admin);
+        
+        if (usersInAdminRole.Any())
+        {
+            logger?.LogInformation("Admin user(s) already exist. Skipping default admin creation.");
+            return;
+        }
+
+        // Default admin adatok
+        var defaultAdmin = new ApplicationUser
+        {
+            UserName = "admin@fitnet.com",
+            Email = "admin@fitnet.com",
+            EmailConfirmed = true,
+            FullName = "Default Admin",
+            City = "Budapest",
+            Country = "Hungary",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        const string defaultPassword = "Admin123!";
+
+        var result = await userManager.CreateAsync(defaultAdmin, defaultPassword);
+
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(defaultAdmin, Roles.Admin);
+            logger?.LogInformation("Default admin user created successfully. Email: {Email}, Password: {Password}", 
+                defaultAdmin.Email, defaultPassword);
+        }
+        else
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            logger?.LogError("Failed to create default admin user: {Errors}", errors);
+        }
+    }
+
     public static async Task SeedBasicEntitiesAsync(FitNetContext context)
     {
         // Csak akkor seedelünk, ha az edzésprogramok tábla üres

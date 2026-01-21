@@ -14,7 +14,7 @@ public class GetEquipmentListEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/equipment");
-        AllowAnonymous();
+
     }
 }
 
@@ -24,7 +24,7 @@ public class GetEquipmentByIdEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/equipment/{id}");
-        AllowAnonymous();
+
     }
 }
 
@@ -36,7 +36,7 @@ public class CreateEquipmentEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Post("/equipment");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -48,7 +48,7 @@ public class UpdateEquipmentEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Put("/equipment/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -58,6 +58,6 @@ public class DeleteEquipmentEndpoint(IMediator mediator)
     public override void Configure()
     {
         Delete("/equipment/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }

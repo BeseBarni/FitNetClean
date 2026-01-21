@@ -21,6 +21,9 @@ public static class DependencyInjection
             
             // Add validation behavior to the pipeline
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+            
+            // Add cache invalidation behavior
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ContraIndicationCacheInvalidationBehavior<,>));
         });
 
         RegisterGenericHandlers(services);

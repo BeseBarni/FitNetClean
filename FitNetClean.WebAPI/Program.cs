@@ -3,12 +3,14 @@ using FastEndpoints.Swagger;
 using FitNetClean.Application;
 using FitNetClean.Infrastructure;
 using FitNetClean.WebAPI.Extensions;
+using FitNetClean.WebAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAuthorizationPolicies();
 
-// Add services to the container.
 builder.Services.AddGeneratedSettings(builder.Configuration);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -23,8 +25,9 @@ var app = builder.Build();
 await app.UseApplyMigrations();
 await app.UseDatabaseSeed();
 
-// Use global exception handler (must be early in the pipeline)
 app.UseGlobalExceptionHandler();
+
+app.UseRequestIdentity();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -35,9 +38,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapHealthChecks("/health");
 
-// Add Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseAuthorizedRequestLogging();
 
 app.UseFastEndpoints(c =>
 {
@@ -47,3 +51,4 @@ app.UseFastEndpoints(c =>
 app.UseSwaggerGen();
 
 app.Run();
+

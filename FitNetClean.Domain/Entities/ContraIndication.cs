@@ -14,5 +14,8 @@ public class ContraIndication : IDeletable
 
     public virtual ICollection<Equipment> EquipmentList { get; set; } = new HashSet<Equipment>();
     public virtual ICollection<Exercise> ExerciseList { get; set; } = new HashSet<Exercise>();
+    public virtual ICollection<UserAvoidedContraIndication> AvoidedByUsers { get; set; } = new HashSet<UserAvoidedContraIndication>();
+    
+    [Required]
     public bool IsDeleted { get; set; } = false;
 }

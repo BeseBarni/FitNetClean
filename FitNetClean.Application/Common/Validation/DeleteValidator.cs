@@ -25,7 +25,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
         }
         else if (typeof(T) == typeof(Exercise))
         {
-            // Exercises typically don't have dependencies that prevent deletion
             dependencies = new List<string>();
         }
         else if (typeof(T) == typeof(Workout))
@@ -44,7 +43,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
     {
         var dependencies = new List<string>();
 
-        // Check for active equipment in this category
         var activeEquipmentCount = await context.Equipment
             .Where(e => e.CategoryId == id && !e.IsDeleted)
             .CountAsync(ct);
@@ -69,7 +67,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
         if (contraIndication == null)
             return dependencies;
 
-        // Check for active exercises with this contraindication
         var activeExercisesCount = contraIndication.ExerciseList
             .Count(e => !e.IsDeleted);
 
@@ -78,7 +75,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
             dependencies.Add($"{activeExercisesCount} active exercise(s)");
         }
 
-        // Check for active equipment with this contraindication
         var activeEquipmentCount = contraIndication.EquipmentList
             .Count(e => !e.IsDeleted);
 
@@ -94,7 +90,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
     {
         var dependencies = new List<string>();
 
-        // Check for active exercises using this equipment
         var activeExercisesCount = await context.Exercise
             .Where(e => e.EquipmentId == id && !e.IsDeleted)
             .CountAsync(ct);
@@ -111,7 +106,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
     {
         var dependencies = new List<string>();
 
-        // Check for active workout groups in this workout
         var activeWorkoutGroupsCount = await context.WorkoutGroup
             .Where(wg => wg.WorkoutId == id && !wg.IsDeleted)
             .CountAsync(ct);
@@ -121,7 +115,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
             dependencies.Add($"{activeWorkoutGroupsCount} active workout group(s)");
         }
 
-        // Check for active exercises in this workout
         var activeExercisesCount = await context.Exercise
             .Where(e => e.WorkoutId == id && !e.IsDeleted)
             .CountAsync(ct);
@@ -138,7 +131,6 @@ public class DeleteValidator(IFitnetContext context) : IDeleteValidator
     {
         var dependencies = new List<string>();
 
-        // Check for active exercises in this workout group
         var activeExercisesCount = await context.Exercise
             .Where(e => e.WorkoutGroupId == id && !e.IsDeleted)
             .CountAsync(ct);

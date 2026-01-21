@@ -1,4 +1,4 @@
-﻿using FitNetClean.Domain.Common;
+using FitNetClean.Domain.Common;
 using System.ComponentModel.DataAnnotations;
 
 namespace FitNetClean.Domain.Entities;
@@ -6,6 +6,7 @@ public class Equipment : IDeletable
 {
     [Required]
     public long Id { get; set; }
+    
     [Required]
     [MaxLength(200)]
     public string Name { get; set; } = null!;
@@ -15,5 +16,7 @@ public class Equipment : IDeletable
     public virtual Category Category { get; set; } = null!;
     public virtual ICollection<Exercise> ExerciseList { get; set; } = new HashSet<Exercise>();
     public virtual ICollection<ContraIndication> ContraIndicationList { get; set; } = new HashSet<ContraIndication>();
+    
+    [Required]
     public bool IsDeleted { get; set; } = false;
 }

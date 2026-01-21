@@ -1,5 +1,7 @@
 using FastEndpoints;
+using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
+using FitNetClean.Application.Extensions;
 using FitNetClean.Application.Features.Categories.Queries;
 using FitNetClean.Application.Features.Shared.Endpoints;
 using FitNetClean.Domain.Entities;
@@ -24,30 +26,31 @@ public class GetCategoryByIdEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/categories/{id}");
-        AllowAnonymous();
+
     }
 }
 
-public class GetCategoryEquipmentEndpoint(IMediator mediator) : Endpoint<IdRequest, CategoryEquipmentDto?>
+public class GetCategoryEquipmentEndpoint(IMediator mediator) : Endpoint<IdRequest, ApiResponse<CategoryEquipmentDto?>>
 {
     public override void Configure()
     {
         Get("/categories/{id}/equipment");
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(IdRequest req, CancellationToken ct)
     {
         var query = new GetCategoryEquipmentQuery(req.Id);
         var result = await mediator.Send(query, ct);
+        var requestId = HttpContext.GetRequestId();
 
         if (result == null)
         {
+            Response = ApiResponse<CategoryEquipmentDto?>.NotFound(requestId);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<CategoryEquipmentDto?>.Success(result, requestId);
     }
 }
 
@@ -59,7 +62,7 @@ public class CreateCategoryEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Post("/categories");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -71,7 +74,7 @@ public class UpdateCategoryEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Put("/categories/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -81,6 +84,6 @@ public class DeleteCategoryEndpoint(IMediator mediator)
     public override void Configure()
     {
         Delete("/categories/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }

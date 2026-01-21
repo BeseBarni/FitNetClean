@@ -16,6 +16,7 @@ public class ContraIndicationWithRelatedSpecification : BaseSpecification<Contra
             ci.Id,
             ci.Name,
             ci.ExerciseList
+                .Where(e => !e.IsDeleted) // ✅ Filter out soft-deleted exercises
                 .OrderBy(e => e.Name)
                 .Select(e => new ExerciseDto(
                     e.Id,
@@ -27,6 +28,7 @@ public class ContraIndicationWithRelatedSpecification : BaseSpecification<Contra
                 ))
                 .ToList(),
             ci.EquipmentList
+                .Where(eq => !eq.IsDeleted) // ✅ Filter out soft-deleted equipment
                 .OrderBy(eq => eq.Name)
                 .Select(eq => new EquipmentDto(
                     eq.Id,

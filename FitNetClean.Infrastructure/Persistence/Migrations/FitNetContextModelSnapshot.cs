@@ -244,6 +244,52 @@ namespace FitNetClean.Infrastructure.Persistence.Migrations
                     b.ToTable("Exercise");
                 });
 
+            modelBuilder.Entity("FitNetClean.Domain.Entities.FavoriteWorkout", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("WorkoutId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("FavoritedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.HasKey("UserId", "WorkoutId");
+
+                    b.HasIndex("WorkoutId");
+
+                    b.ToTable("FavoriteWorkout");
+                });
+
+            modelBuilder.Entity("FitNetClean.Domain.Entities.UserAvoidedContraIndication", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ContraIndicationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime>("MarkedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "ContraIndicationId");
+
+                    b.HasIndex("ContraIndicationId");
+
+                    b.ToTable("UserAvoidedContraIndication");
+                });
+
             modelBuilder.Entity("FitNetClean.Domain.Entities.Workout", b =>
                 {
                     b.Property<long>("Id")
@@ -526,6 +572,44 @@ namespace FitNetClean.Infrastructure.Persistence.Migrations
                     b.Navigation("WorkoutGroup");
                 });
 
+            modelBuilder.Entity("FitNetClean.Domain.Entities.FavoriteWorkout", b =>
+                {
+                    b.HasOne("FitNetClean.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("FavoriteWorkouts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitNetClean.Domain.Entities.Workout", "Workout")
+                        .WithMany("FavoritedBy")
+                        .HasForeignKey("WorkoutId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("Workout");
+                });
+
+            modelBuilder.Entity("FitNetClean.Domain.Entities.UserAvoidedContraIndication", b =>
+                {
+                    b.HasOne("FitNetClean.Domain.Entities.ContraIndication", "ContraIndication")
+                        .WithMany("AvoidedByUsers")
+                        .HasForeignKey("ContraIndicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FitNetClean.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("AvoidedContraIndications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ContraIndication");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FitNetClean.Domain.Entities.WorkoutGroup", b =>
                 {
                     b.HasOne("FitNetClean.Domain.Entities.Workout", "Workout")
@@ -588,9 +672,21 @@ namespace FitNetClean.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("FitNetClean.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("AvoidedContraIndications");
+
+                    b.Navigation("FavoriteWorkouts");
+                });
+
             modelBuilder.Entity("FitNetClean.Domain.Entities.Category", b =>
                 {
                     b.Navigation("EquipmentList");
+                });
+
+            modelBuilder.Entity("FitNetClean.Domain.Entities.ContraIndication", b =>
+                {
+                    b.Navigation("AvoidedByUsers");
                 });
 
             modelBuilder.Entity("FitNetClean.Domain.Entities.Equipment", b =>
@@ -601,6 +697,8 @@ namespace FitNetClean.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("FitNetClean.Domain.Entities.Workout", b =>
                 {
                     b.Navigation("ExerciseList");
+
+                    b.Navigation("FavoritedBy");
 
                     b.Navigation("WorkoutGroupList");
                 });

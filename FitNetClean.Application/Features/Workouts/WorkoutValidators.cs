@@ -11,8 +11,14 @@ public class CreateWorkoutRequestValidator : AbstractValidator<CreateWorkoutRequ
         RuleFor(x => x.CodeName)
             .NotEmpty()
             .WithMessage("CodeName is required")
-            .MaximumLength(50)
-            .WithMessage("CodeName must not exceed 50 characters");
+            .Length(6, 12)
+            .WithMessage("CodeName must be between 6 and 12 characters")
+            .Must(codeName => !char.IsDigit(codeName[0]))
+            .WithMessage("CodeName cannot start with a number")
+            .Must(codeName => !codeName.Contains(' ') && !codeName.Any(char.IsWhiteSpace))
+            .WithMessage("CodeName cannot contain whitespace")
+            .Matches(@"^[A-Z0-9_!]+$")
+            .WithMessage("CodeName can only contain uppercase letters (A-Z), numbers (0-9), underscore (_), and exclamation mark (!)");
 
         RuleFor(x => x.Title)
             .NotEmpty()
@@ -42,8 +48,14 @@ public class UpdateWorkoutRequestValidator : AbstractValidator<UpdateWorkoutRequ
         RuleFor(x => x.CodeName)
             .NotEmpty()
             .WithMessage("CodeName is required")
-            .MaximumLength(50)
-            .WithMessage("CodeName must not exceed 50 characters");
+            .Length(6, 12)
+            .WithMessage("CodeName must be between 6 and 12 characters")
+            .Must(codeName => !char.IsDigit(codeName[0]))
+            .WithMessage("CodeName cannot start with a number")
+            .Must(codeName => !codeName.Contains(' ') && !codeName.Any(char.IsWhiteSpace))
+            .WithMessage("CodeName cannot contain whitespace")
+            .Matches(@"^[A-Z0-9_!]+$")
+            .WithMessage("CodeName can only contain uppercase letters (A-Z), numbers (0-9), underscore (_), and exclamation mark (!)");
 
         RuleFor(x => x.Title)
             .NotEmpty()

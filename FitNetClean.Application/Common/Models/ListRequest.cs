@@ -1,4 +1,4 @@
-namespace FitNetClean.Application.Common;
+namespace FitNetClean.Application.Common.Models;
 
 public class ListRequest
 {

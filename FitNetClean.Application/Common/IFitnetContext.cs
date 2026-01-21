@@ -13,9 +13,13 @@ public interface IFitnetContext
     DbSet<Measurement> Measurement { get; set; }
     DbSet<Workout> Workout { get; set; }
     DbSet<WorkoutGroup> WorkoutGroup { get; set; }
+    DbSet<FavoriteWorkout> FavoriteWorkout { get; set; }
+    DbSet<UserAvoidedContraIndication> UserAvoidedContraIndication { get; set; }
+    DbSet<ApplicationUser> Users { get; set; }
 
     DbSet<TEntity> Set<TEntity>() where TEntity : class;
     DatabaseFacade Database { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
+

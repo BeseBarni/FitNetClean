@@ -1,5 +1,7 @@
 using FastEndpoints;
+using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
+using FitNetClean.Application.Extensions;
 using FitNetClean.Application.Features.Shared.Endpoints;
 using FitNetClean.Application.Features.WorkoutGroups.Commands;
 using FitNetClean.Domain.Entities;
@@ -14,7 +16,7 @@ public class GetWorkoutGroupsEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/workout-groups");
-        AllowAnonymous();
+
     }
 }
 
@@ -24,7 +26,7 @@ public class GetWorkoutGroupByIdEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Get("/workout-groups/{id}");
-        AllowAnonymous();
+
     }
 }
 
@@ -36,7 +38,7 @@ public class CreateWorkoutGroupEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Post("/workout-groups");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -48,7 +50,7 @@ public class UpdateWorkoutGroupEndpoint(IMediator mediator, IMapper mapper)
     public override void Configure()
     {
         Put("/workout-groups/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -58,7 +60,7 @@ public class DeleteWorkoutGroupEndpoint(IMediator mediator)
     public override void Configure()
     {
         Delete("/workout-groups/{id}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
 
@@ -68,12 +70,12 @@ public record AddExerciseRequest
 }
 
 public class AddExerciseToWorkoutGroupEndpoint(IMediator mediator) 
-    : Endpoint<AddExerciseRequest, bool>
+    : Endpoint<AddExerciseRequest, ApiResponse<bool>>
 {
     public override void Configure()
     {
         Post("/workout-groups/{id}/exercises");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 
     public override async Task HandleAsync(AddExerciseRequest req, CancellationToken ct)
@@ -81,24 +83,26 @@ public class AddExerciseToWorkoutGroupEndpoint(IMediator mediator)
         var workoutGroupId = Route<long>("id");
         var command = new AddExerciseToWorkoutGroupCommand(workoutGroupId, req.ExerciseId);
         var result = await mediator.Send(command, ct);
+        var requestId = HttpContext.GetRequestId();
 
         if (!result)
         {
+            Response = ApiResponse<bool>.NotFound(requestId, false);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<bool>.Success(result, requestId);
     }
 }
 
 public class RemoveExerciseFromWorkoutGroupEndpoint(IMediator mediator) 
-    : EndpointWithoutRequest<bool>
+    : EndpointWithoutRequest<ApiResponse<bool>>
 {
     public override void Configure()
     {
         Delete("/workout-groups/{id}/exercises/{exerciseId}");
-        AllowAnonymous();
+        Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -107,13 +111,15 @@ public class RemoveExerciseFromWorkoutGroupEndpoint(IMediator mediator)
         var exerciseId = Route<long>("exerciseId");
         var command = new RemoveExerciseFromWorkoutGroupCommand(workoutGroupId, exerciseId);
         var result = await mediator.Send(command, ct);
+        var requestId = HttpContext.GetRequestId();
 
         if (!result)
         {
+            Response = ApiResponse<bool>.NotFound(requestId, false);
             HttpContext.Response.StatusCode = 404;
             return;
         }
 
-        Response = result;
+        Response = ApiResponse<bool>.Success(result, requestId);
     }
 }

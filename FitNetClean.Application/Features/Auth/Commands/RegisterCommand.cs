@@ -1,5 +1,6 @@
 using FitNetClean.Application.Common.Interfaces;
 using FitNetClean.Application.DTOs;
+using FitNetClean.Domain.Constants;
 using FitNetClean.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -42,6 +43,14 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
         {
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Registration failed: {errors}");
+        }
+
+        var roleResult = await _userManager.AddToRoleAsync(user, Roles.ProgramReader);
+        
+        if (!roleResult.Succeeded)
+        {
+            var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Failed to assign ProgramReader role: {errors}");
         }
 
         var token = _jwtTokenService.GenerateToken(user);
