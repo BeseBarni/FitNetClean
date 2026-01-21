@@ -1,15 +1,16 @@
 using FastEndpoints;
 using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
-using FitNetClean.Application.Extensions;
-using FitNetClean.Application.Features.Shared.Endpoints;
+using FitNetClean.Application.Features.Workouts;
 using FitNetClean.Application.Features.Workouts.Commands;
 using FitNetClean.Application.Features.Workouts.Queries;
 using FitNetClean.Domain.Entities;
+using FitNetClean.WebAPI.Endpoints.Shared;
+using FitNetClean.WebAPI.Extensions;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.Workouts;
+namespace FitNetClean.WebAPI.Endpoints.Workouts;
 
 public class GetWorkoutsEndpoint(IMediator mediator, IMapper mapper)
     : GetListEndpointBase<Workout, WorkoutDto>(mediator, mapper)
@@ -43,7 +44,7 @@ public class GetWorkoutDetailEndpoint(IMediator mediator) : Endpoint<IdRequest, 
     {
         var query = new GetWorkoutDetailQuery(req.Id);
         var result = await mediator.Send(query, ct);
-        var requestId = GetRequestId();
+        var requestId = HttpContext.GetRequestId();
 
         if (result == null)
         {
@@ -54,21 +55,7 @@ public class GetWorkoutDetailEndpoint(IMediator mediator) : Endpoint<IdRequest, 
 
         Response = ApiResponse<WorkoutDetailDto?>.Success(result, requestId);
     }
-
-    private Guid GetRequestId()
-    {
-        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
-            ? guid
-            : Guid.Empty;
-    }
 }
-
-public record CreateWorkoutRequest(
-    string CodeName, 
-    string Title, 
-    string? Description,
-    int WarmupDurationMinutes,
-    int MainWorkoutDurationMinutes);
 
 public class CreateWorkoutEndpoint(IMediator mediator, IMapper mapper)
     : CreateEndpointBase<Workout, WorkoutDto, CreateWorkoutRequest>(mediator, mapper)
@@ -79,13 +66,6 @@ public class CreateWorkoutEndpoint(IMediator mediator, IMapper mapper)
         Policies(FitNetClean.Domain.Constants.Policies.ProgramWriterOrAdmin);
     }
 }
-
-public record UpdateWorkoutRequest(
-    string CodeName, 
-    string Title, 
-    string? Description,
-    int WarmupDurationMinutes,
-    int MainWorkoutDurationMinutes);
 
 public class UpdateWorkoutEndpoint(IMediator mediator, IMapper mapper)
     : UpdateEndpointBase<Workout, WorkoutDto, UpdateWorkoutRequest>(mediator, mapper)
@@ -105,11 +85,6 @@ public class DeleteWorkoutEndpoint(IMediator mediator)
         Delete("/workouts/{id}");
         Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
-}
-
-public record AddWorkoutGroupRequest
-{
-    public long WorkoutGroupId { get; init; }
 }
 
 public class AddWorkoutGroupToWorkoutEndpoint(IMediator mediator) 
@@ -139,11 +114,6 @@ public class AddWorkoutGroupToWorkoutEndpoint(IMediator mediator)
     }
 }
 
-public record FavoriteWorkoutRequest
-{
-    public long UserId { get; init; }
-}
-
 public class AddWorkoutToFavoritesEndpoint(IMediator mediator) 
     : Endpoint<FavoriteWorkoutRequest, ApiResponse<bool>>
 {
@@ -158,7 +128,7 @@ public class AddWorkoutToFavoritesEndpoint(IMediator mediator)
         var workoutId = Route<long>("id");
         var command = new AddWorkoutToFavoritesCommand(req.UserId, workoutId);
         var result = await mediator.Send(command, ct);
-        var requestId = GetRequestId();
+        var requestId = HttpContext.GetRequestId();
 
         if (!result)
         {
@@ -168,13 +138,6 @@ public class AddWorkoutToFavoritesEndpoint(IMediator mediator)
         }
 
         Response = ApiResponse<bool>.Success(result, requestId);
-    }
-
-    private Guid GetRequestId()
-    {
-        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
-            ? guid
-            : Guid.Empty;
     }
 }
 
@@ -192,7 +155,7 @@ public class RemoveWorkoutFromFavoritesEndpoint(IMediator mediator)
         var workoutId = Route<long>("id");
         var command = new RemoveWorkoutFromFavoritesCommand(req.UserId, workoutId);
         var result = await mediator.Send(command, ct);
-        var requestId = GetRequestId();
+        var requestId = HttpContext.GetRequestId();
 
         if (!result)
         {
@@ -202,13 +165,6 @@ public class RemoveWorkoutFromFavoritesEndpoint(IMediator mediator)
         }
 
         Response = ApiResponse<bool>.Success(result, requestId);
-    }
-
-    private Guid GetRequestId()
-    {
-        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
-            ? guid
-            : Guid.Empty;
     }
 }
 
@@ -225,16 +181,9 @@ public class GetUserFavoriteWorkoutsEndpoint(IMediator mediator)
     {
         var query = new GetUserFavoriteWorkoutsQuery(req.Id);
         var result = await mediator.Send(query, ct);
-        var requestId = GetRequestId();
+        var requestId = HttpContext.GetRequestId();
 
         Response = ApiResponse<List<WorkoutDto>>.Success(result, requestId);
-    }
-
-    private Guid GetRequestId()
-    {
-        return HttpContext.Items.TryGetValue("RequestId", out var value) && value is Guid guid
-            ? guid
-            : Guid.Empty;
     }
 }
 

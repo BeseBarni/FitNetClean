@@ -1,12 +1,10 @@
-using AutoMapper;
-using FastEndpoints;
 using FitNetClean.Application.DTOs;
-using FitNetClean.Application.Features.Shared.Endpoints;
-using FitNetClean.Domain.Entities;
+using FitNetClean.Application.Features.Equipment;
+using FitNetClean.WebAPI.Endpoints.Shared;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.Equipment;
+namespace FitNetClean.WebAPI.Endpoints.Equipment;
 
 public class GetEquipmentListEndpoint(IMediator mediator, IMapper mapper)
     : GetListEndpointBase<Domain.Entities.Equipment, EquipmentDto>(mediator, mapper)
@@ -28,8 +26,6 @@ public class GetEquipmentByIdEndpoint(IMediator mediator, IMapper mapper)
     }
 }
 
-public record CreateEquipmentRequest(string Name, long CategoryId);
-
 public class CreateEquipmentEndpoint(IMediator mediator, IMapper mapper)
     : CreateEndpointBase<Domain.Entities.Equipment, EquipmentDto, CreateEquipmentRequest>(mediator, mapper)
 {
@@ -39,8 +35,6 @@ public class CreateEquipmentEndpoint(IMediator mediator, IMapper mapper)
         Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
-
-public record UpdateEquipmentRequest(string Name, long CategoryId);
 
 public class UpdateEquipmentEndpoint(IMediator mediator, IMapper mapper)
     : UpdateEndpointBase<Domain.Entities.Equipment, EquipmentDto, UpdateEquipmentRequest>(mediator, mapper)

@@ -1,14 +1,15 @@
 using FastEndpoints;
 using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
-using FitNetClean.Application.Extensions;
+using FitNetClean.Application.Features.Categories;
 using FitNetClean.Application.Features.Categories.Queries;
-using FitNetClean.Application.Features.Shared.Endpoints;
 using FitNetClean.Domain.Entities;
+using FitNetClean.WebAPI.Endpoints.Shared;
+using FitNetClean.WebAPI.Extensions;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.Categories;
+namespace FitNetClean.WebAPI.Endpoints.Categories;
 
 public class GetCategoriesEndpoint(IMediator mediator, IMapper mapper)
     : GetListEndpointBase<Category, CategoryDto>(mediator, mapper)
@@ -54,8 +55,6 @@ public class GetCategoryEquipmentEndpoint(IMediator mediator) : Endpoint<IdReque
     }
 }
 
-public record CreateCategoryRequest(string Name);
-
 public class CreateCategoryEndpoint(IMediator mediator, IMapper mapper)
     : CreateEndpointBase<Category, CategoryDto, CreateCategoryRequest>(mediator, mapper)
 {
@@ -65,8 +64,6 @@ public class CreateCategoryEndpoint(IMediator mediator, IMapper mapper)
         Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
-
-public record UpdateCategoryRequest(string Name);
 
 public class UpdateCategoryEndpoint(IMediator mediator, IMapper mapper)
     : UpdateEndpointBase<Category, CategoryDto, UpdateCategoryRequest>(mediator, mapper)

@@ -68,6 +68,7 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, MemoryCacheService>();
 
         services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         return services;
     }

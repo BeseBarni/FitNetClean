@@ -1,12 +1,11 @@
-using AutoMapper;
 using FastEndpoints;
 using FitNetClean.Application.Common.Models;
-using FitNetClean.Application.Extensions;
 using FitNetClean.Application.Features.Shared.Commands;
+using FitNetClean.WebAPI.Extensions;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.Shared.Endpoints;
+namespace FitNetClean.WebAPI.Endpoints.Shared;
 
 public class UpdateRequest<TUpdateDto>
 {
@@ -14,24 +13,16 @@ public class UpdateRequest<TUpdateDto>
     public TUpdateDto Data { get; set; } = default!;
 }
 
-public abstract class UpdateEndpointBase<TEntity, TDto, TUpdateDto> : Endpoint<UpdateRequest<TUpdateDto>, ApiResponse<TDto?>>
+public abstract class UpdateEndpointBase<TEntity, TDto, TUpdateDto>(IMediator mediator, IMapper mapper) 
+    : Endpoint<UpdateRequest<TUpdateDto>, ApiResponse<TDto?>>
     where TEntity : class
     where TDto : class
     where TUpdateDto : class
 {
-    private readonly IMediator _mediator;
-    private readonly IMapper _mapper;
-
-    protected UpdateEndpointBase(IMediator mediator, IMapper mapper)
-    {
-        _mediator = mediator;
-        _mapper = mapper;
-    }
-
     public override async Task HandleAsync(UpdateRequest<TUpdateDto> req, CancellationToken ct)
     {
-        var entity = _mapper.Map<TEntity>(req.Data);
-        var updated = await _mediator.Send(new UpdateCommand<TEntity>(req.Id, entity), ct);
+        var entity = mapper.Map<TEntity>(req.Data);
+        var updated = await mediator.Send(new UpdateCommand<TEntity>(req.Id, entity), ct);
         var requestId = HttpContext.GetRequestId();
         
         if (updated == null)
@@ -41,7 +32,7 @@ public abstract class UpdateEndpointBase<TEntity, TDto, TUpdateDto> : Endpoint<U
             return;
         }
 
-        var mapped = _mapper.Map<TDto>(updated);
+        var mapped = mapper.Map<TDto>(updated);
         Response = ApiResponse<TDto?>.Success(mapped, requestId);
     }
 }

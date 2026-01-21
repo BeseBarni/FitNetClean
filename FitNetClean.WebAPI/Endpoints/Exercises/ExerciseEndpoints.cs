@@ -1,16 +1,16 @@
-using AutoMapper;
 using FastEndpoints;
 using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
-using FitNetClean.Application.Extensions;
+using FitNetClean.Application.Features.Exercises;
 using FitNetClean.Application.Features.Exercises.Commands;
 using FitNetClean.Application.Features.Exercises.Queries;
-using FitNetClean.Application.Features.Shared.Endpoints;
 using FitNetClean.Domain.Entities;
+using FitNetClean.WebAPI.Endpoints.Shared;
+using FitNetClean.WebAPI.Extensions;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.Exercises;
+namespace FitNetClean.WebAPI.Endpoints.Exercises;
 
 public class GetExercisesEndpoint(IMediator mediator, IMapper mapper)
     : GetListEndpointBase<Exercise, ExerciseDto>(mediator, mapper)
@@ -57,13 +57,6 @@ public class GetExerciseWorkoutProgramsEndpoint(IMediator mediator) : Endpoint<I
     }
 }
 
-public record CreateExerciseRequest(
-    string Name, 
-    Measurement Repetition, 
-    long WorkoutId, 
-    long? WorkoutGroupId, 
-    long? EquipmentId);
-
 public class CreateExerciseEndpoint(IMediator mediator, IMapper mapper)
     : CreateEndpointBase<Exercise, ExerciseDto, CreateExerciseRequest>(mediator, mapper)
 {
@@ -73,13 +66,6 @@ public class CreateExerciseEndpoint(IMediator mediator, IMapper mapper)
         Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
-
-public record UpdateExerciseRequest(
-    string Name, 
-    Measurement Repetition, 
-    long WorkoutId, 
-    long? WorkoutGroupId, 
-    long? EquipmentId);
 
 public class UpdateExerciseEndpoint(IMediator mediator, IMapper mapper)
     : UpdateEndpointBase<Exercise, ExerciseDto, UpdateExerciseRequest>(mediator, mapper)
@@ -99,11 +85,6 @@ public class DeleteExerciseEndpoint(IMediator mediator)
         Delete("/exercises/{id}");
         Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
-}
-
-public record AddContraIndicationRequest
-{
-    public long ContraIndicationId { get; init; }
 }
 
 public class AddContraIndicationToExerciseEndpoint(IMediator mediator) 

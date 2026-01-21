@@ -1,14 +1,15 @@
 using FastEndpoints;
 using FitNetClean.Application.Common.Models;
 using FitNetClean.Application.DTOs;
-using FitNetClean.Application.Extensions;
-using FitNetClean.Application.Features.Shared.Endpoints;
+using FitNetClean.Application.Features.WorkoutGroups;
 using FitNetClean.Application.Features.WorkoutGroups.Commands;
 using FitNetClean.Domain.Entities;
+using FitNetClean.WebAPI.Endpoints.Shared;
+using FitNetClean.WebAPI.Extensions;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.WorkoutGroups;
+namespace FitNetClean.WebAPI.Endpoints.WorkoutGroups;
 
 public class GetWorkoutGroupsEndpoint(IMediator mediator, IMapper mapper)
     : GetListEndpointBase<WorkoutGroup, WorkoutGroupDto>(mediator, mapper)
@@ -30,8 +31,6 @@ public class GetWorkoutGroupByIdEndpoint(IMediator mediator, IMapper mapper)
     }
 }
 
-public record CreateWorkoutGroupRequest(long WorkoutId, string Title);
-
 public class CreateWorkoutGroupEndpoint(IMediator mediator, IMapper mapper)
     : CreateEndpointBase<WorkoutGroup, WorkoutGroupDto, CreateWorkoutGroupRequest>(mediator, mapper)
 {
@@ -41,8 +40,6 @@ public class CreateWorkoutGroupEndpoint(IMediator mediator, IMapper mapper)
         Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
 }
-
-public record UpdateWorkoutGroupRequest(long WorkoutId, string Title);
 
 public class UpdateWorkoutGroupEndpoint(IMediator mediator, IMapper mapper)
     : UpdateEndpointBase<WorkoutGroup, WorkoutGroupDto, UpdateWorkoutGroupRequest>(mediator, mapper)
@@ -62,11 +59,6 @@ public class DeleteWorkoutGroupEndpoint(IMediator mediator)
         Delete("/workout-groups/{id}");
         Policies(FitNetClean.Domain.Constants.Policies.AdminOnly);
     }
-}
-
-public record AddExerciseRequest
-{
-    public long ExerciseId { get; init; }
 }
 
 public class AddExerciseToWorkoutGroupEndpoint(IMediator mediator) 

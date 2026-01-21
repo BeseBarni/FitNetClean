@@ -3,6 +3,8 @@ using FitNetClean.Application.Common.Behaviors;
 using FitNetClean.Application.Common.Validation;
 using FitNetClean.Application.Features.Shared.Commands;
 using FitNetClean.Application.Features.Shared.Queries;
+using FitNetClean.Domain;
+using FitNetClean.Domain.Entities;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,13 +41,10 @@ public static class DependencyInjection
 
     private static void RegisterGenericHandlers(IServiceCollection services)
     {
-        var domainAssembly = AppDomain.CurrentDomain.GetAssemblies()
-            .FirstOrDefault(a => a.GetName().Name == "FitNetClean.Domain");
-
-        if (domainAssembly == null) return;
+        var domainAssembly = typeof(IDomainAssemblyMarker).Assembly;
 
         var entityTypes = domainAssembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace == "FitNetClean.Domain.Entities");
+            .Where(t => t.IsClass && !t.IsAbstract && t.Namespace == typeof(Workout).Namespace);
 
         foreach (var entityType in entityTypes)
         {

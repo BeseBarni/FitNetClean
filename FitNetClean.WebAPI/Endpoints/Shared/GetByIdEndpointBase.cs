@@ -1,33 +1,20 @@
 using FastEndpoints;
 using FitNetClean.Application.Common.Models;
-using FitNetClean.Application.Extensions;
 using FitNetClean.Application.Features.Shared.Queries;
+using FitNetClean.WebAPI.Extensions;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.Shared.Endpoints;
+namespace FitNetClean.WebAPI.Endpoints.Shared;
 
-public class IdRequest
-{
-    public long Id { get; set; }
-}
-
-public abstract class GetByIdEndpointBase<TEntity, TDto> : Endpoint<IdRequest, ApiResponse<TDto?>>
+public abstract class GetByIdEndpointBase<TEntity, TDto>(IMediator mediator, IMapper mapper) 
+    : Endpoint<IdRequest, ApiResponse<TDto?>>
     where TEntity : class
     where TDto : class
 {
-    private readonly IMediator _mediator;
-    private readonly IMapper _mapper;
-
-    protected GetByIdEndpointBase(IMediator mediator, IMapper mapper)
-    {
-        _mediator = mediator;
-        _mapper = mapper;
-    }
-
     public override async Task HandleAsync(IdRequest req, CancellationToken ct)
     {
-        var entity = await _mediator.Send(new GetByIdQuery<TEntity>(req.Id), ct);
+        var entity = await mediator.Send(new GetByIdQuery<TEntity>(req.Id), ct);
         var requestId = HttpContext.GetRequestId();
         
         if (entity == null)
@@ -37,7 +24,7 @@ public abstract class GetByIdEndpointBase<TEntity, TDto> : Endpoint<IdRequest, A
             return;
         }
 
-        var mapped = _mapper.Map<TDto>(entity);
+        var mapped = mapper.Map<TDto>(entity);
         Response = ApiResponse<TDto?>.Success(mapped, requestId);
     }
 }

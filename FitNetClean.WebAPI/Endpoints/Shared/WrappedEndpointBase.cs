@@ -1,9 +1,8 @@
 using FastEndpoints;
 using FitNetClean.Application.Common.Models;
-using FitNetClean.Application.Extensions;
-using Microsoft.AspNetCore.Http;
+using FitNetClean.WebAPI.Extensions;
 
-namespace FitNetClean.Application.Features.Shared.Endpoints;
+namespace FitNetClean.WebAPI.Endpoints.Shared;
 
 public abstract class WrappedEndpointBase<TRequest, TResponse> : Endpoint<TRequest, ApiResponse<TResponse>>
 {

@@ -1,67 +1,17 @@
+using FitNetClean.Application.Common;
 using FitNetClean.Application.Common.Interfaces;
 using FitNetClean.Application.DTOs;
-using FitNetClean.Domain.Constants;
-using FitNetClean.Domain.Entities;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 
 namespace FitNetClean.Application.Features.Auth.Commands;
 
-public record RegisterCommand(RegisterRequest Request) : IRequest<AuthResponse>;
+public record RegisterCommand(RegisterRequest Request) : IRequest<Result<AuthResponse>>;
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponse>
+public class RegisterCommandHandler(IIdentityService identityService)
+    : IRequestHandler<RegisterCommand, Result<AuthResponse>>
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IJwtTokenService _jwtTokenService;
-
-    public RegisterCommandHandler(
-        UserManager<ApplicationUser> userManager,
-        IJwtTokenService jwtTokenService)
+    public Task<Result<AuthResponse>> Handle(RegisterCommand request, CancellationToken ct)
     {
-        _userManager = userManager;
-        _jwtTokenService = jwtTokenService;
-    }
-
-    public async Task<AuthResponse> Handle(RegisterCommand request, CancellationToken ct)
-    {
-        var req = request.Request;
-
-        var user = new ApplicationUser
-        {
-            UserName = req.Email,
-            Email = req.Email,
-            FullName = req.FullName,
-            City = req.City,
-            Country = req.Country,
-            ProfilePictureUrl = req.ProfilePictureUrl,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var result = await _userManager.CreateAsync(user, req.Password);
-
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Registration failed: {errors}");
-        }
-
-        var roleResult = await _userManager.AddToRoleAsync(user, Roles.ProgramReader);
-        
-        if (!roleResult.Succeeded)
-        {
-            var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Failed to assign ProgramReader role: {errors}");
-        }
-
-        var token = _jwtTokenService.GenerateToken(user);
-
-        return new AuthResponse(
-            token,
-            user.Email!,
-            user.FullName,
-            user.City,
-            user.Country,
-            user.ProfilePictureUrl
-        );
+        return identityService.RegisterAsync(request.Request, ct);
     }
 }

@@ -1,13 +1,13 @@
-using AutoMapper;
 using FastEndpoints;
 using FitNetClean.Application.DTOs;
+using FitNetClean.Application.Features.ContraIndications;
 using FitNetClean.Application.Features.ContraIndications.Queries;
-using FitNetClean.Application.Features.Shared.Endpoints;
 using FitNetClean.Domain.Entities;
+using FitNetClean.WebAPI.Endpoints.Shared;
 using MediatR;
 using IMapper = AutoMapper.IMapper;
 
-namespace FitNetClean.Application.Features.ContraIndications;
+namespace FitNetClean.WebAPI.Endpoints.ContraIndications;
 
 public class GetContraIndicationsEndpoint(IMediator mediator, IMapper mapper)
     : GetListEndpointBase<ContraIndication, ContraIndicationDto>(mediator, mapper)
@@ -52,8 +52,6 @@ public class GetContraIndicationRelatedEndpoint(IMediator mediator) : Endpoint<I
     }
 }
 
-public record CreateContraIndicationRequest(string Name);
-
 public class CreateContraIndicationEndpoint(IMediator mediator, IMapper mapper)
     : CreateEndpointBase<ContraIndication, ContraIndicationDto, CreateContraIndicationRequest>(mediator, mapper)
 {
@@ -63,8 +61,6 @@ public class CreateContraIndicationEndpoint(IMediator mediator, IMapper mapper)
         AllowAnonymous();
     }
 }
-
-public record UpdateContraIndicationRequest(string Name);
 
 public class UpdateContraIndicationEndpoint(IMediator mediator, IMapper mapper)
     : UpdateEndpointBase<ContraIndication, ContraIndicationDto, UpdateContraIndicationRequest>(mediator, mapper)
